@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recorrido Virtual 360° - Parque</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.65);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: system-ui, -apple-system, sans-serif;
+            pointer-events: none;
+        }
+        #hud h2 { margin: 0; font-size: 1.1rem; }
+        #hud p { margin: 4px 0 0; font-size: 0.85rem; color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+    <div id="hud">
+        <h2 id="parque-escena">Zona A</h2>
+        <p>Arrastra para mirar • Haz clic en los círculos para avanzar</p>
+    </div>
+
+    <a-scene cursor="rayOrigin: mouse" raycaster="objects: .hotspot">
+
+        <a-assets>
+            <img id="img-zona-a" src="Parque_1.jpg">
+            <img id="img-zona-b" src="Parque_2.jpg">
+            <img id="img-zona-c" src="Parque3.jpg">
+        </a-assets>
+
+        <a-sky id="cielo-360" src="#img-zona-a" rotation="0 -90 0"></a-sky>
+
+        <a-entity position="0 1.6 0">
+            <a-camera look-controls="reverseMouseDrag: true">
+                <a-cursor fuse="true" fuse-timeout="1500"
+                          raycaster="objects: .hotspot"
+                          geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025"
+                          material="color: #ffffff; shader: flat; opacity: 0.8">
+                </a-cursor>
+            </a-camera>
+        </a-entity>
+
+        <a-entity id="grupo-zona-a" visible="true">
+
+            <a-entity position="-8 1.7 -15" rotation="0 0 0">
+                <a-circle class="hotspot" radius="0.45" color="#10b981" opacity="0.9"
+                          cambiar-escena="destino: zona-b; titulo: Zona B">
+                </a-circle>
+                <a-text value="Zona B" align="center" position="0 0.7 0" scale="2.5 2.5 2.5" color="#ffffff"></a-text>
+            </a-entity>
+        </a-entity>
+
+        <a-entity id="grupo-zona-b" visible="false">
+            <!-- Indicador para regresar a Zona A -->
+            <a-entity position="7 1.7 15" rotation="0 180 0">
+                <a-circle class="hotspot" radius="0.45" color="#f59e0b" opacity="0.9"
+                          cambiar-escena="destino: zona-a; titulo: Zona A">
+                </a-circle>
+                <a-text value="Zona A" align="center" position="0 0.7 0" scale="2.5 2.5 2.5" color="#ffffff"></a-text>
+            </a-entity>
+
+            <a-entity position="-7 1.7 -15" rotation="0  0">
+                <a-circle class="hotspot" radius="0.45" color="#10b981" opacity="0.9"
+                          cambiar-escena="destino: zona-c; titulo: Zona C">
+                </a-circle>
+                <a-text value="Zona C" align="center" position="0 0.7 0" scale="2.5 2.5 2.5" color="#ffffff"></a-text>
+            </a-entity>
+        </a-entity>
+
+        <a-entity id="grupo-zona-c" visible="false">
+
+            <a-entity position="-15 1.9 9" rotation="0 90 0">
+                <a-circle class="hotspot" radius="0.45" color="#f59e0b" opacity="0.9"
+                          cambiar-escena="destino: zona-b; titulo: Zona B">
+                </a-circle>
+                <a-text value="Zona B" align="center" position="0 0.7 0" scale="2.5 2.5 2.5" color="#ffffff"></a-text>
+            </a-entity>
+        </a-entity>
+
+    </a-scene>
+
+    <script>
+        AFRAME.registerComponent('cambiar-escena', {
+            schema: {
+                destino: { type: 'string' },
+                titulo: { type: 'string' }
+            },
+            init: function () {
+                const el = this.el;
+                const data = this.data;
+
+                el.addEventListener('mouseenter', function () {
+                    el.setAttribute('scale', '1.2 1.2 1.2');
+                });
+                el.addEventListener('mouseleave', function () {
+                    el.setAttribute('scale', '1 1 1');
+                });
+
+                el.addEventListener('click', function () {
+                    if (!el.parentEl.parentEl.getAttribute('visible')) return;
+
+                    const cielo = document.querySelector('#cielo-360');
+                    cielo.setAttribute('src', '#img-' + data.destino);
+
+                    document.getElementById('parque-escena').textContent = data.titulo;
+
+                    const zonas = ['zona-a', 'zona-b', 'zona-c'];
+                    zonas.forEach(zona => {
+                        const grupo = document.querySelector('#grupo-' + zona);
+                        grupo.setAttribute('visible', zona === data.destino);
+                    });
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
